@@ -1,3 +1,8 @@
+DROP DATABASE IF EXISTS loginexample;
+CREATE DATABASE loginexample;
+USE loginexample;
+
+
 CREATE TABLE `users` (
   `user_id` int NOT NULL AUTO_INCREMENT,
   `username` varchar(20) NOT NULL,
