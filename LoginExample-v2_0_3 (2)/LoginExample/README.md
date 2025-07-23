@@ -6,12 +6,12 @@ really do anything: it's just a simplified example to share some basic tools
 and techniques you might need when building a real-world login system.
 
 There are three user roles in this system:
-- **Customer**
-- **Staff**
+- **student**
+- **employer**
 - **Admin**
 
-Anyone who registers via the app will be a **Customer**. The only way to create
-**Staff** or **Admin** accounts in this simple app is to insert them directly
+Anyone who registers via the app will be a **student**. The only way to create
+**employer** or **Admin** accounts in this simple app is to insert them directly
 into the database. Hey, we didn't say this app was complete!
 
 ## Getting this Example Running
@@ -30,8 +30,8 @@ To run the example yourself, you'll need to:
    your local database server.
 7. Run [The Python/Flask application](run.py).
 
-At that point, you should be able to register yourself a new **customer**
-account or log in using one of the **customer**, **staff**, or **admin**
+At that point, you should be able to register yourself a new **student**
+account or log in using one of the **student**, **employer**, or **admin**
 accounts listed in the [Database Population Script](populate_database.sql).
 
 Enjoy!
