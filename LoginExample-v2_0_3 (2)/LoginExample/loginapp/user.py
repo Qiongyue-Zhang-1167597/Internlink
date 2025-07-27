@@ -102,34 +102,24 @@ def login():
                     session['username'] = account['username']
                     session['role'] = account['role']
 
-                    return redirect(user_home_url())
+                    if session['role'] == 'student':
+                        return redirect(url_for('student_home'))
+                    elif session['role'] == 'employer':
+                        return redirect(url_for('employer_home'))
+                    elif session['role'] == 'admin':
+                        return redirect(url_for('admin_home'))
+                    else:
+                        return redirect(url_for('access_denied'))
+
                 else:
-                    # Password is incorrect. Re-display the login form, keeping
-                    # the username provided by the user so they don't need to
-                    # re-enter it. We also set a `password_invalid` flag that
-                    # the template uses to display a validation message.
                     return render_template('login.html',
                                            username=username,
                                            password_invalid=True)
             else:
-                # We didn't find an account in the database with this username.
-                # Re-display the login form, keeping the username so the user
-                # can see what they entered (otherwise, they might just keep
-                # trying the same thing). We also set a `username_invalid` flag
-                # that tells the template to display an appropriate message.
-                #
-                # Note: In this example app, we tell the user if the user
-                # account doesn't exist. Many websites (e.g. Google, Microsoft)
-                # do this, but other sites display a single "Invalid username
-                # or password" message to prevent an attacker from determining
-                # whether a username exists or not. Here, we accept that risk
-                # to provide more useful feedback to the user.
-                return render_template('login.html', 
+                return render_template('login.html',
                                        username=username,
                                        username_invalid=True)
 
-    # This was a GET request, or an invalid POST (no username and/or password),
-    # so we just render the login form with no pre-populated details or flags.
     return render_template('login.html')
 
 @app.route('/signup', methods=['GET','POST'])
