@@ -1,0 +1,48 @@
+{% extends 'userbase.html' %}
+
+{% block title %}Browse Internships{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <h2 class="mb-4">Browse Internships</h2>
+
+  <form method="get" class="row g-3 mb-4">
+    <div class="col-md-4">
+      <input type="text" class="form-control" name="location" placeholder="Filter by location">
+    </div>
+    <div class="col-md-4">
+      <input type="text" class="form-control" name="duration" placeholder="Filter by duration">
+    </div>
+    <div class="col-md-4">
+      <button type="submit" class="btn btn-primary">Apply Filters</button>
+    </div>
+  </form>
+
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Title</th>
+        <th>Company</th>
+        <th>Location</th>
+        <th>Duration</th>
+        <th>Deadline</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in internships %}
+      <tr>
+        <td>{{ item.title }}</td>
+        <td>{{ item.company_name }}</td>
+        <td>{{ item.location }}</td>
+        <td>{{ item.duration }}</td>
+        <td>{{ item.application_deadline }}</td>
+      </tr>
+      {% else %}
+      <tr>
+        <td colspan="5">No internships found.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
