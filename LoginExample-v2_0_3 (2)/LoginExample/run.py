@@ -20,12 +20,12 @@ When running locally, you can use any of the following approaches:
         - Go to the "Run and Debug" tab in the sidebar.
         - Click the link to "create a launch.json file".
         - Select "More Python Debugger options..." from the menu that appears.
-        - Choose "Python Debugger: Flask LoginExample".
+        - Choose "Python Debugger: Flask InternLink".
         - Save the new launch.json file.
 
     - You can run your Flask app directly from the command line. However,
-        you'll need to specify the app to run. For example, to run `loginapp`
-        you'll need to enter `python -m flask --app loginapp run`. This method
+        you'll need to specify the app to run. For example, to run `InternLink`
+        you'll need to enter `python -m flask --app InternLink run`. This method
         doesn't use run.py.
         
 On PythonAnywhere and similar WSGI servers, you can do either of the following
@@ -34,8 +34,8 @@ in your WSGI configuration file:
     - Import the `app` object from run.py. For example, in PythonAnywhere's
         WSGI file, set the final line to `from run import app as application`.
 
-    - Import the `app` object directly from the `loginapp` module. For example,
-        in PythonAnywhere's WSGI file, set the final line to `from loginapp
+    - Import the `app` object directly from the `InternLink` module. For example,
+        in PythonAnywhere's WSGI file, set the final line to `from InternLink
         import app as application`. This method doesn't require run.py.
 
 Because there are so many ways to start a Python/Flask web app, and many of
@@ -43,7 +43,7 @@ them bypass run.py entirely, don't put any of your application code in here.
 Think of run.py as a "shortcut" or "launcher" used to run your Flask app,
 rather than a core part of the app itself.
 """
-from loginapp import app
+from InternLink import app
 
 # If run.py was actually executed (run), not just imported into another script,
 # then start our Flask app on a local development server. To learn more about
