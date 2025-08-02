@@ -1,69 +1,73 @@
-"""Script to generate password hashes for one or more user accounts.
-
-You can use this script to generate bcrypt password hashes for all of the
-initial user accounts in your database creation script. Remember that each
-of your user accounts should have its own unique password.
-
-Before running this script, you'll need to replace the list of user accounts
-(the block beginning "users = [") with the actual list of user accounts you
-want to generate hashes for.
-"""
 from collections import namedtuple
 from flask import Flask
 from flask_bcrypt import Bcrypt
 
-# We use a "named tuple" here to create a simple "User Account" class that can
-# store a username and password.
-# 
-# Don't worry if you haven't seen this before: it's just a simple way of
-# storing those two pieces of data together in one variable. It also lets us
-# access the username and password by name: for example, if we create a
-# UserAccount named "myuser", like this:
-# 
-# myuser = UserAccount('myusername', 'mypassword')
-# 
-# We can then access those values via "myuser.username" and "myuser.password",
-# instead of having to access myuser[0] and myuser[1] like you would have to
-# with a regular tuple.
 UserAccount = namedtuple('UserAccount', ['username', 'password'])
 
+# Initialize Flask and Bcrypt
 app = Flask(__name__)
 flask_bcrypt = Bcrypt(app)
 
-# Replace the example UserAccount objects below with the initial user accounts
-# for your own web app. You can add as many as you need to the list.
-users = [UserAccount('user1', 'student1pass'), 
-         UserAccount('user2', 'student2pass'),
-         UserAccount('employer1', 'employer1pass'),
-         UserAccount('employer2', 'employer2pass'),
-         UserAccount('admin1', 'admin1pass')]
-
-print('Username | Password | Hash | Password Matches Hash')
-
-for user in users:
-    # Generate a bcrypt hash using the default settings. This function returns
-    # the hash as 59-60 bytes (always 60 in the current version of bcrypt).
-    password_hash = flask_bcrypt.generate_password_hash(user.password)
+users_to_create = [
+    # --- Admins ---
+    UserAccount('admin_linda', 'AdminPass123!'),
+    UserAccount('admin_david', 'AdminSecure456$'),
     
-    # Check whether the hash matches the original password. We don't really
-    # need to do this here: this is just to show how your web app would check a
-    # password supplied by the user (user.password) against a hash value
-    # retrieved from the database (password_hash).
-    # 
-    # This returns True if the password matches, or False if it doesn't.
-    password_matches_hash = flask_bcrypt.check_password_hash(password_hash, user.password)
+    # --- Employers ---
+    UserAccount('techcorp', 'TechCorpP@ss'),
+    UserAccount('innovate_inc', 'InnovateP@ss'),
+    UserAccount('datadigits', 'DataDigitsP@ss'),
+    UserAccount('healthwell', 'HealthWellP@ss'),
+    UserAccount('greenleaf', 'GreenLeafP@ss'),
+    
+    # --- Students ---
+    UserAccount('janesmith', 'StudentPass1'),
+    UserAccount('johndoe', '-'),
+    UserAccount('emilyjones', 'StudentPass3'),
+    UserAccount('michaelw', 'StudentPass4'),
+    UserAccount('sarahb', 'StudentPass5'),
+    UserAccount('kevin_davis', 'StudentPass6'),
+    UserAccount('chloeg', 'StudentPass7'),
+    UserAccount('jamesr', 'StudentPass8'),
+    UserAccount('olivia_m', 'StudentPass9'),
+    UserAccount('liam_h', 'StudentPass10'),
+    UserAccount('ava_lopez', 'StudentPass11'),
+    UserAccount('noah_gonzalez', 'StudentPass12'),
+    UserAccount('isabella_p', 'StudentPass13'),
+    UserAccount('ethan_sanchez', 'StudentPass14'),
+    UserAccount('sophia_rivera', 'StudentPass15'),
+    UserAccount('mason_t', 'StudentPass16'),
+    UserAccount('mia_ramirez', 'StudentPass17'),
+    UserAccount('jacob_f', 'StudentPass18'),
+    UserAccount('charlotte_g', 'StudentPass19'),
+    UserAccount('daniel_kim', 'StudentPass20')
+]
 
-    # Output username, password, hash, and the result of our verification test.
-    # 
-    # Note that username is never actually used when generating the hash or
-    # checking a password. We only include username here for display purposes,
-    # to make it easier for you to copy the right password for each user when
-    # creating your database population script.
-    #
-    # We call password_hash.decode() to translate the series of bytes that make
-    # up the hash into a UTF-8 encoded string of characters. Otherwise, when 
-    # Python prints out the hash, it will surrounded it with `b''` to indicate
-    # that the hash is a binary string. You don't need to do this if you're
-    # passing the hash in to MySQL: you can just use password_hash directly, as
-    # we do in the Login Example project, and it will accept the binary string.
-    print(f'{user.username} | {user.password} | {password_hash.decode()} | {password_matches_hash}')
+# --- Main Script Logic ---
+if __name__ == "__main__":
+    print("\n--- Generating Password Hashes for Initial Users ---\n")
+    print(f"{'Username':<20} | {'Password':<20} | {'Generated Hash (for SQL script)':<65}")
+    print("-" * 115)
+
+    for user in users_to_create:
+       
+        password_hash = flask_bcrypt.generate_password_hash(user.password).decode('utf-8')
+
+        print(f"{user.username:<20} | {user.password:<20} | {password_hash:<65}")
+
+    print("-" * 115)
+    print("\nGeneration complete. Copy the hashes from the table above and paste them into your 'populate_database.sql' file.\n")
+
+
+
+    
+
+
+
+
+
+
+
+
+
+
