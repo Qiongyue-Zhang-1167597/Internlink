@@ -30,28 +30,28 @@ need to:
 
 - Added this CHANGELOG file to track changes to the Login Example project.
 - Added support for non-standard MySQL server ports. A port could previously be
-  specified in [connect.py](loginapp/connect.py), but any port specified there
+  specified in [connect.py](InternLink/connect.py), but any port specified there
   was ignored and the default port (`3306`) was always used instead. The
-  `init_db()` function in [db.py](loginapp/db.py) now provides an optional
+  `init_db()` function in [db.py](InternLink/db.py) now provides an optional
   `port` parameter that can be used to specify a non-standard MySQL port if
-  necessary. The updated [\_\_init\_\_.py](loginapp/__init__.py) file uses this
+  necessary. The updated [\_\_init\_\_.py](InternLink/__init__.py) file uses this
   new parameter to pass in the value of `dbport` in from connect.py. 
 
 ### Fixed
 
 - Fixed database connectivity on Microsoft Windows 11 by modifying
-  [db.py](loginapp/db.py) to use the unofficial
+  [db.py](InternLink/db.py) to use the unofficial
   [mysqlclient](https://pypi.org/project/mysqlclient/) package instead of
   [MySQL-Connector-Python](https://pypi.org/project/mysql-connector-python/).
   The mysqlclient version has been verified as working on Windows 10,
   Windows 11, and PythonAnywhere.
 - Database port (`dbport`) is now correctly specified as an integer, rather
-  than a string, in [connect.py](loginapp/connect.py).
+  than a string, in [connect.py](InternLink/connect.py).
 - Fixed a logic error that would lead to an endless cycle of redirects if the
   user had a valid (i.e. correctly signed) login cookie that contained an
   invalid role name. This would never occur during 'normal' usage of the app,
   but could happen if role names were modified, added, or removed during
   development. This was addressed by modifying the `user_home_url()` function
-  in [user.py](loginapp/user.py) to redirect users who have a valid login
+  in [user.py](InternLink/user.py) to redirect users who have a valid login
   cookie, but an invalid role, to the `logout` endpoint. This removes their
   invalid session information, then forces them to log in again.
