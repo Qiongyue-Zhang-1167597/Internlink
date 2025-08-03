@@ -12,37 +12,37 @@ SET FOREIGN_KEY_CHECKS = 1;
 
 -- --- Admins (2) ---
 INSERT INTO `user` (`username`, `full_name`, `email`, `password_hash`, `role`, `status`) VALUES 
-('admin_linda', 'Linda Stern', 'linda.stern@example.com', '$2b$12$AcBp6hO75Mt8Bh5fczsTxORsFjJnsJTiXVYw45nsoFiGJrk3n2ulq', 'admin', 'active'),
-('admin_david', 'David Chen', 'david.chen@example.com', '$2b$12$1nVVpT7P2DNBy5cmtXToduXg0l.QcL5SBYWjEFfxkmXIEgDww5kV6', 'admin', 'active'),
+('admin_linda', 'Linda Stern', 'linda.stern@example.com', '$2b$12$pHFjG07@r/mEGBb4mMCzeXS0so.EkLWX8H6.7kzSX7mXsWbcsTFq', 'admin', 'active'),
+('admin_david', 'David Chen', 'david.chen@example.com', '$2b$12$PUZPku3Ei3UVPDW4hqSti.scmkQeerIMrsd8SAQoA2d2298MoQeRu', 'admin', 'active'),
 
 -- --- Employers (5) ---
-('techcorp', 'TechCorp Solutions', 'hr@techcorp.com', '$2b$12$uYEZxlo6jIfFaD24KzFCQOxG706x3Hl0uvfnQm8mjkKMfdp1WM7pO', 'employer', 'active'),
-('innovate_inc', 'Innovate Inc.', 'careers@innovateinc.com', '$2b$12$vZ/B7JorQJEB74A9OlGeb.Wl469QVS29q0vJZKYPpabl7XP7qfMzy', 'employer', 'active'),
-('datadigits', 'DataDigits Analytics', 'jobs@datadigits.com', '$2b$12$MJxvyKeZ5uD0AyOe4A2EUuRSqE7liZaDKNT7h0AQmtgRZ2Sn1jAz.', 'employer', 'active'),
-('healthwell', 'HealthWell Partners', 'recruitment@healthwell.com', '$2b$12$Ir2aOMhZW8V2bWvkqIh8WOA2otewxOIh3INYDYHySnQu33TAcIopO', 'employer', 'active'),
-('greenleaf', 'GreenLeaf Organics', 'apply@greenleaf.com', '$2b$12$a5XssD3zibqcqV.CYjgzFO6EjUsoNdFj7D0OGb7vWGiP7Pe78zBVW', 'employer', 'active'),
+('techcorp', 'TechCorp Solutions', 'hr@techcorp.com', '$2b$12$wi.JENIiSPchngrc93G/eaisfR/mgg6Q8018zIkI1004bQLIt/R.', 'employer', 'active'),
+('innovate_inc', 'Innovate Inc.', 'careers@innovateinc.com', '$2b$12$xInPCXr.85DGbw/EJpNfRO67xu2rwqj.kbLTEIIKa0K9kwjsknJO', 'employer', 'active'),
+('datadigits', 'DataDigits Analytics', 'jobs@datadigits.com', '$2b$12$yvWRKTen2bB8ohAp6CZhKu2QXIXbGkLWFI8Ac4NKrydulQ.E4qf/G', 'employer', 'active'),
+('healthwell', 'HealthWell Partners', 'recruitment@healthwell.com', '$2b$12$k0RNAQbN7qmYuEP/v9r/zOqmc2n8grrPYMDM5ExkQOAhZusI2P3ly.', 'employer', 'active'),
+('greenleaf', 'GreenLeaf Organics', 'apply@greenleaf.com', '$2b$12$ZvUAxyhj1bfUFaQ/SEpZ/uxd1NbWYcJmlky4NNDMIB0yP1hn.wJU.', 'employer', 'active'),
 
 -- --- Students (20) ---
-('janesmith', 'Jane Smith', 'jane.s@university.com', '$2b$12$KdHk96bzUT2WxMUzeAu0yebIdXh.LhXTPeyMN.AgGJM2FrVxMI6U6', 'student', 'active'),
-('johndoe', 'John Doe', 'john.d@university.com', '$2b$12$rTp1WX5En8p5XfyNencHmOczJ6X5PGI65f9Kvt8QBYgshzHLeEMLe', 'student', 'active'),
-('emilyjones', 'Emily Jones', 'emily.j@university.com', '$2b$12$AYaT4RDH7ERUVjR5dWbLs.GtzUmqNoP5NwQ4xAI2RR77ZRtMufx3i', 'student', 'active'),
-('michaelw', 'Michael Williams', 'michael.w@university.com', '$2b$12$gDr2atuUDNKjQz0odTrUte1xtIbop0wrkP6kqbvebcWUlndRjyFHq', 'student', 'active'),
-('sarahb', 'Sarah Brown', 'sarah.b@university.com', '$2b$12$am1IYxAxXdtdcHMxLHOMh.VGL5MQMQPTHTtUJ68Q7aOVdlqMrvgqq', 'student', 'active'),
-('kevin_davis', 'Kevin Davis', 'kevin.d@university.com', '$2b$12$ZZOYYLpXKZz2z0Vp4vf54.BUkJGD2Ih89L8KrOKxv0xA.PbxDsMB.', 'student', 'active'),
-('chloeg', 'Chloe Garcia', 'chloe.g@university.com', '$2b$12$HDPvcrmENuIqvre4UCr9be1oTGpHCbvsjueHQjPBg/2aWQEHFVsE6', 'student', 'active'),
-('jamesr', 'James Rodriguez', 'james.r@university.com', '$2b$12$R7II3Ql1M2DIaaR2bIPoxOGsnsWxtoh8Hn/C0izHZrjPJedeI7psu', 'student', 'active'),
-('olivia_m', 'Olivia Martinez', 'olivia.m@university.com', '$2b$12$qcSXtbul1Xlx7W7d4jyO7OXjqK4DOy1QovxC/MkA1MSRvxIA6Mg6O', 'student', 'active'),
-('liam_h', 'Liam Hernandez', 'liam.h@university.com', '$2b$12$UZ8UDPD6bpapBKnPdXiebOnWDq5ngwsNtxSSG2fT9AgC0JecSfUjW', 'student', 'active'),
-('ava_lopez', 'Ava Lopez', 'ava.l@university.com', '$2b$12$7m9wRjlD8ADt6m89PNmkjeGEeq/CqS4bV5Wm06iQz6hn6Lw2l6TAK', 'student', 'active'),
-('noah_gonzalez', 'Noah Gonzalez', 'noah.g@university.com', '$2b$12$1VKkuhvtE0w1YWoxo7d0Ue2V/ZhvBCnwM.nchIe.s7Wpxnr0RcRRm', 'student', 'active'),
-('isabella_p', 'Isabella Perez', 'isabella.p@university.com', '$2b$12$COOOfWq3YDAy/dh3WQPGzO4xod50EHrTn2NANDtzBzEvjjNsrOjim', 'student', 'active'),
-('ethan_sanchez', 'Ethan Sanchez', 'ethan.s@university.com', '$2b$12$JoHCaWUqmrts6zGIZ3FFbOwJUQmaJrTXRvXlGf.tUHiI0Bctzg.9a', 'student', 'active'),
-('sophia_rivera', 'Sophia Rivera', 'sophia.r@university.com', '$2b$12$gj3D0m2bPz6Lm5syHZku7OjtdE.mNAXnieZiWzVi2yBRaBo87I8Rq', 'student', 'active'),
-('mason_t', 'Mason Torres', 'mason.t@university.com', '$2b$12$L9imbkN/vdCA0loiNMdHY.yUtGdzl9coXphETlDnU4.bb6Q4PnhPi', 'student', 'active'),
-('mia_ramirez', 'Mia Ramirez', 'mia.r@university.com', '$2b$12$BzGPK3J.itMm463NkZ9OdetXImP5xYqBrbCYx9e1mHzT/PpPtkIey', 'student', 'active'),
-('jacob_f', 'Jacob Flores', 'jacob.f@university.com', '$2b$12$Yp4pdRvElRT2D9o.ug/RkudeSwM509LjKK7yvpI80gzC4QzExoQtm', 'student', 'active'),
-('charlotte_g', 'Charlotte Gomez', 'charlotte.g@university.com', '$2b$12$4Ysa/DNVuXtjRky8AiTL3uvUJ1XdbeLsTrxnoxLrlUrBAn8JwWqJa', 'student', 'active'),
-('daniel_kim', 'Daniel Kim', 'daniel.k@university.com', '$2b$12$EmUBdT0NcZExOHeu9n4gBOcexljfmwJtJzy3eJY.q31q6lehiG4/e', 'student', 'active');
+('janesmith', 'Jane Smith', 'jane.s@university.com', '$2b$12$ATPIQ3N4hRTBjLtkhDi07u/eFV1/T/hWSuudDJhtk.R48NzGZtTp6', 'student', 'active'),
+('johndoe', 'John Doe', 'john.d@university.com', '$2b$12$LvLwat1FPgBB4cOj93LCP.QdO4KSBRqjN8IKqapS5BbbnrdfINlSe', 'student', 'active'),
+('emilyjones', 'Emily Jones', 'emily.j@university.com', '$2b$12$EWYBDBBipy/rOjNxxhMRqeCWRZ5vwGrh2tvtGtEOdFBfMYNj3xnzO', 'student', 'active'),
+('michaelw', 'Michael Williams', 'michael.w@university.com', '$2b$12$ADUdsaWe0tCUYDif2ywV7OseflPJx5ks.FHJy.8z4Qpsg/7cMCE7q', 'student', 'active'),
+('sarahb', 'Sarah Brown', 'sarah.b@university.com', '$2b$12$hBy/oWqXmTwF37mxSxA0letc.eZ7gT8nk2hzhtwZtQnDDXuy160BG', 'student', 'active'),
+('kevin_davis', 'Kevin Davis', 'kevin.d@university.com', '$2b$12$@RIaCSqaAyC275bXXWuSuOIMYRFD9ECWUWT4DttGkd44ZFkUPOit6.', 'student', 'active'),
+('chloeg', 'Chloe Garcia', 'chloe.g@university.com', '$2b$12$d5wjuvVpj9IX8yEcpr7tvuMpNVyl.mt4Z4IHaFBU8LgBN7sPTm1RO', 'student', 'active'),
+('jamesr', 'James Rodriguez', 'james.r@university.com', '$2b$12$7flndtz2CPyV2f2ZCstXXOUdaEJwgC5B.QESv78jI09yofu0aHYUC', 'student', 'active'),
+('olivia_m', 'Olivia Martinez', 'olivia.m@university.com', '$2b$12$fhotdehMKw/ppRv2ZUVodXkOLkIRUoafGaaWMeztziabs.', 'student', 'active'),
+('liam_h', 'Liam Hernandez', 'liam.h@university.com', '$2b$12$ftdohuElMK/pwRpNZJVodokubo/KLrxUIDrnaedGawHtttiabs.', 'student', 'active'),
+('ava_lopez', 'Ava Lopez', 'ava.l@university.com', '$2b$12$riJg3yRNLP86BsEC6koan.n/kWa949Ag45IOoWe8xQVizSV4a', 'student', 'active'),
+('noah_gonzalez', 'Noah Gonzalez', 'noah.g@university.com', '$2b$12$RPK.OkKSQYYxB9UkzHbuQ8AgDaA.vCr3KDZj59gIJKNRkaPyQ2', 'student', 'active'),
+('isabella_p', 'Isabella Perez', 'isabella.p@university.com', '$2b$12$gDVGTCMHYRkSM8NucZOTYOKTZCL4CIsLFSI79HP5A3RghGWA', 'student', 'active'),
+('ethan_sanchez', 'Ethan Sanchez', 'ethan.s@university.com', '$2b$12$RbByy/oWxAmlF3ZmxSxA0let.e27gFBhx2hrNxtZtQDDoxy16B08', 'student', 'active'),
+('sophia_rivera', 'Sophia Rivera', 'sophia.r@university.com', '$2b$12$QxOrC6hKf9xGFffz/1@ee2y0deDPFMFBE1eL0UzHyGKNsyVO', 'student', 'active'),
+('mason_t', 'Mason Torres', 'mason.t@university.com', '$2b$12$QyFyvcvqzF28wClP3aV2IC5tn0wnvUqD9y/CK72Te2Us5.3mza', 'student', 'active'),
+('mia_ramirez', 'Mia Ramirez', 'mia.r@university.com', '$2b$12$RBxy41Le2eqlVCEaQDbP uR8VU6Op7cLFA8NKNUdoCxLHqhhVpm', 'student', 'active'),
+('jacob_f', 'Jacob Flores', 'jacob.f@university.com', '$2b$12$YEnVNL5KKQ/DnLwtG8ERsu5gclLeuRhEcarEjZVpHyrkZE6uoRD', 'student', 'active'),
+('charlotte_g', 'Charlotte Gomez', 'charlotte.g@university.com', '$2b$12$ViFi+v4j8z6mm1hmMTu8N.TZvwddt3wIGKAgoZIT.i39P0knEsprS', 'student', 'active'),
+('daniel_kim', 'Daniel Kim', 'daniel.k@university.com', '$2b$12$LwN8b5v6yuaISmzvCVImu7j/fEuz.Up1U1p52KexcFTPAcEV8Ke', 'student', 'active');
 
 
 -- --- Employer Details ---
