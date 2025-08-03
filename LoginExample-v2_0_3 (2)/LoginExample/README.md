@@ -1,169 +1,138 @@
-# Login Example v2.0.3 (24 February 2025)
+# InternLink: Internship Application Portal
 
-This sample app demonstrates a simple login system that allows users to
-register, log in, and view pages specific to their user role. Those pages don't
-really do anything: it's just a simplified example to share some basic tools
-and techniques you might need when building a real-world login system.
+InternLink is a dynamic web application designed to bridge the gap between students seeking internships and employers looking for talent. It provides a streamlined platform for managing the entire internship application lifecycle, catering to three distinct user roles: Students, Employers, and Administrators.
 
-There are three user roles in this system:
-- **student**
-- **employer**
-- **Admin**
+This project was developed as part of the COMP639 Web Development course.
 
-Anyone who registers via the app will be a **student**. The only way to create
-**employer** or **Admin** accounts in this simple app is to insert them directly
-into the database. Hey, we didn't say this app was complete!
+---
 
-## Getting this Example Running
+## Features 
 
-To run the example yourself, you'll need to:
+The application provides a role-based experience to ensure users only access relevant features.
 
-1. Open the project in Visual Studio Code.
-2. Create yourself a virtual environment.
-3. Install all of the packages listed in requirements.txt (Visual Studio will
-   offer to do this for you during step 2).
-4. Use the [Database Creation Script](create_database.sql) to create your own
-   copy of the **loginexample** database.
-5. Use the [Database Population Script](populate_database.sql) to populate
-   the **loginexample** ***users*** table with example users.
-6. Modify [connect.py](loginapp/connect.py) with the connection details for
-   your local database server.
-7. Run [The Python/Flask application](run.py).
+#### For Students:
+*   **Browse & Filter:** Search and filter a comprehensive list of available internships by category, location, and duration.
+*   **Apply for Internships:** Submit applications for specific roles with a cover letter and an uploaded resume (PDF format).
+*   **Track Applications:** View the real-time status of all submitted applications (Pending, Accepted, or Rejected) and view feedback from employers.
 
-At that point, you should be able to register yourself a new **student**
-account or log in using one of the **student**, **employer**, or **admin**
-accounts listed in the [Database Population Script](populate_database.sql).
+#### For Employers:
+*   **View Postings:** Access a dashboard showing only the internship positions posted by their own organization.
+*   **Manage Applicants:** Review a detailed list of student applicants for each internship posting.
+*   **Update Status:** Accept or Reject applications, with the option to provide valuable feedback to the student.
 
-Enjoy!
+#### For Administrators:
+*   **User Management:** View a list of all registered users and manage their account status (e.g., active/inactive).
+*   **Full Oversight:** View all internships and applications across the entire platform for monitoring and support purposes.
 
-## Database Scripts
+#### General Features:
+*   **Profile Management:** All users can view and edit their own profile details and change their password securely.
 
-While we're talking about the database, you should take a look at:
-- [MySQL script to create the necessary database](create_database.sql)
-- [MySQL script to populate the database with users](populate_database.sql)
-- [Python script to create password hashes](password_hash_generator.py)
+---
 
-What's that third one? Well, for that we need to talk about...
+## Technology Stack 
 
-## Passwords
+*   **Backend:** Python 3.9+ with Flask Framework
+*   **Frontend:** HTML5, Bootstrap 5 CSS, JavaScript
+*   **Database:** MySQL
+*   **Password Hashing:** Flask-Bcrypt
+*   **Deployment:** Hosted on PythonAnywhere
 
-One of the key things about this login system is that it doesn't actually store
-users' passwords in the database. That may lead you to ask...
+---
 
-### Why not store passwords?
-People tend to re-use passwords across multiple websites, no matter how much
-security experts might tell them not to. That means if someone gets access to
-your database, containing a whole lot of users' passwords and other details
-like names or email addresses, they can use those passwords to compromise
-your users' accounts with other services (like their email, or bank account).
+## Local Setup and Installation 
 
-### How do you handle registration and login without storing passwords?
+Follow these steps to get the application running on your local machine.
 
-Easy! Well, sort of. It goes like this:
+#### 1. Prerequisites 
+*   Python 3.9 or newer
+*   Git
+*   A running MySQL server instance
 
-1. When the user first gives us a password during registration, we pass it
-   through a cryptographic "hash" function: a one-way mathematical operation
-   that transforms the original password into its corresponding "hash value"
-   or "hash". The same password always results in the same hash.
-   
-2. We throw away the original password, and just keep the hash.
-   
-3. The hash value is useless to an attacker: because the hash-function is
-   one-way, anyone who steals our database of user accounts can't work out
-   what the users' passwords are. Well, okay, there are clever ways around
-   that. Look up "rainbow tables" if you're interested. Read Cory Doctorow's
-   "Knights of the Rainbow Table" if you're *really* interested. But it takes
-   a whole lot more time and computing power for an attacker to get a user's
-   password back from its hash than it does to just read the plain password
-   straight out of your database.
+#### 2. Clone the Repository 
+```bash
+git clone https://github.com/Qiongyue-Zhang-1167597/Internlink.git
+cd Internlink
+```
 
-4. When a user tries to log in, we take the password they supplied us, run it
-   through the exact same hash function, and then compare the hash to the one
-   we have on file. Because the same password will always produce the same
-   hash, if the two hashes match then the passwords must match! Again, kinda.
-   It's possible, though very unlikely, that two passwords may produce the
-   same hash value. In that case, you'd be able to log in using either
-   password. These kinds of "hash collisions" are extremely rare, though. Rare
-   enough that we won't worry about that here.
+#### 3. Create and Activate Virtual Environment 
+*   For Windows:
+    ```bash
+    python -m venv venv
+    .\venv\Scripts\activate
+    ```
+*   For macOS/Linux:
+    ```bash
+    python3 -m venv venv
+    source venv/bin/activate
+    ```
 
-So, in short:
-1. The user gives us a password.
-2. We put that password though a one-way hashing algorithm to get its "hash".
-3. We store the hash, **not** the password.
-4. During login, we put the supplied password through the same algorithm.
-5. If the hash of the supplied password matches the hash of the user's original
-   password that we stored in step 3, then we know the user has supplied the
-   correct password... without having to know their password at all.
+#### 4. Install Dependencies 
+With your virtual environment activated, run the following command:
+```bash
+pip install -r requirements.txt
+```
 
-Cool, huh?
+#### 5. Database Configuration 
+You need to create a `connect.py` file to store your local database credentials.
 
-### Salting Passwords
+*   Navigate into the `InternLink` package directory: `cd InternLink`
+*   Create a new file named `connect.py` with the following content, replacing the placeholder values with your own MySQL details.
 
-Remember how we mentioned that it's technically possible for an attacker to
-work out a user's original password from its hash, just expensive? Well, it's
-actually not expensive at all if you just pre-calculate one of those "rainbow
-tables": essentially a giant table mapping hash values back to passwords. It
-takes time to generate something like that, and the tables are absolutely huge,
-but storage is pretty cheap these days and you only have to generate the table
-once per hash algorithm. Once someone has a rainbow table for a particular
-algorithm, translating hashes back to passwords is just a simple lookup.
+    ```python
+    
+    
+    dbuser = 'your_mysql_username'
+    dbpass = 'your_mysql_password'
+    dbhost = 'localhost'
+    dbname = 'internlink_db'
+    dbport = 3306
+    ```
 
-The contemporary solution to this is to add a "salt" to each password before
-you hash it. The salt is just some random string. It doesn't have to be secret,
-necessarily, just specific to your app (which we used to do in older versions
-of this example project) or, ideally, specific to each password (which we do in
-this current version). Adding a salt to your passwords totally breaks the whole
-"rainbow table" approach: an attacker can't just use an off-the-shelf table
-any more. With our old approach, one salt for the whole app, an attacker needs
-to generate a rainbow table specific to *our application's salt*. When you're
-using per-password salts, like we are here, an attacker would have to generate
-one of those giant tables to break *each individual password* in our database.
+#### 6. Database Setup 
+You will need a MySQL client (like MySQL Workbench or the command-line client) to set up the database.
 
-Quantum computing will probably break all this, in the not-too-distant future,
-but for now this approach provides a reasonable means of protecting users'
-passwords from disclosure if an attacker gains access to our database.
+1.  **Create the Database:** First, create a new database with the same name you specified in `dbname` (e.g., `internlink_db`).
+2.  **Create Tables:** Execute the `create_database.sql` script to create all necessary tables.
+3.  **Populate Data:** Execute the `populate_database.sql` script to fill the tables with initial test data.
 
-### How exactly do we do all this?
+#### 7. Run the Application 
+Navigate back to the project root directory (the one containing `run.py`) and run the application:
+```bash
+python run.py
+```
+The application will be available at `http://127.0.0.1:5000`.
 
-With the [Flask-Bcrypt library](https://flask-bcrypt.readthedocs.io/en/1.0.1/)
-(which is really just a Flask-specific wrapper for the bcrypt library) and a
-couple lines of code.
+---
 
-If you take a look at the [database creation script](create_database.sql),
-you'll see that instead of a "password" field to store the password, we have a
-"password_hash" field that stores a binary string of 60 characters.
+## Deployment on PythonAnywhere 
 
-Flask-Bcrypt uses the [bcrypt algorithm](https://en.wikipedia.org/wiki/Bcrypt)
-(as you may have guessed from the name). Bcrypt password hashes bundle together
-a bcrypt version number, the password hash itself, and the salt value used to
-generate it. Together, depending on which version of the algorithm you're
-using, this is a string of either 59 or 60 bytes (always 60 bytes in the
-current version).
+This application is deployed and hosted on PythonAnywhere. The general steps are outlined below:
 
-The string of bytes making up a bcrypt hash are all in the "printable
-character" range, so can be displayed a text string. In a MySQL database you
-could either store them as a `BINARY(60)` or `CHAR(60) BINARY` column: we use
-the latter format in this example because it makes it easier for us to see and
-edit the hashes in MySQL Workbench. Technically, because of the way our app
-is written, we could use plain old `CHAR(60)`. However, we explicitly use
-`CHAR(60) BINARY` because this tells MySQL to treat our string as binary data:
-where, for example, "ABC" is meaningfully different to "ABc" or "aBC".
+1.  **Clone Repository:** Clone the GitHub repository to your PythonAnywhere account via a Bash console.
+2.  **Create Virtual Environment & Install Dependencies:** Set up a virtual environment and install all packages from `requirements.txt`.
+3.  **Create Web App:** Create a new "Manual configuration" Web App on the PythonAnywhere Web tab.
+4.  **Configure Paths:** Set the "Source code", "Working directory", and "Virtualenv" paths to point to your project directory and the `venv` folder within it.
+5.  **Configure WSGI:** Edit the WSGI configuration file to import and use the `app` object from the `InternLink` package.
+6.  **Setup Database:** Create a new MySQL database on the Databases tab, note the credentials, and create a `connect.py` file on the server with these new credentials. Then, run the `.sql` scripts in a PythonAnywhere MySQL console.
+7.  **Configure Static Files:** Map the URL `/static` to the project's static directory (`.../InternLink/InternLink/static`).
+8.  **Reload:** Reload the web app from the Web tab.
 
-If this sounds terrifyingly complicated, don't worry. Take a look at the
-[Hash generator Python script](password_hash_generator.py) for an example of
-how to create the hashes (literally one line of code) and check a password
-against a hash (again, one line of code).
+---
 
-If we were using the bcrypt library directly, or another option such as
-[Flask-Hashing](https://flask-hashing.readthedocs.io/en/latest/) (used in older
-versions of this example) then we'd need to handle the "salting" process
-ourselves. However, the Flask-Bcrypt library does this for us. We only have to
-call the `generate_password_hash(password)` function to generate a hash for a
-new `password` (e.g. when a user signs up or changes their password). That
-function generates a new salt value then uses it to hash the password in a
-single step.
+## Testing Accounts 
 
-Once we've generated a password hash and stored it in our database, we can then
-call the `check_password_hash(pw_hash, password)` function to check a whether a
-`password` supplied during login matches the `pw_hash` stored in our database
-for that particular user account.
+You can use the following accounts to test the application's different roles.
+
+#### Administrator
+*   **Username:** `admin_linda`
+*   **Password:** `AdminPass123!`
+
+#### Employer
+*   **Username:** `techcorp`
+*   **Password:** `TechCorp@ss`
+
+#### Student
+*   **Username:** `janesmith`
+*   **Password:** `BlueJay@2024`
+
+*(Note: A full list of 20 students and 5 employers with strong passwords is available in the `populate_database.sql` script.)*
