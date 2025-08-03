@@ -12,6 +12,9 @@
             <h1>Admin Home Page</h1>
             <p class="lead text-muted">This is the page an admin user sees when they first sign in. It should provide quick access to the information and features they're most likely to need when using the app.</p>
             <p>Status: {{ user.status }}</p>
+            <div class="mt-4">
+                <a href="{{ url_for('admin.view_users') }}" class="btn btn-lg btn-secondary">Manage Users</a>
+            </div>
         </div>
     </div>
 </section>
