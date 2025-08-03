@@ -1,0 +1,129 @@
+{% extends 'userbase.html' %}
+
+{% block title %}Applicants for {{ internship.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <a href="{{ url_for('employer.view_my_postings') }}" class="btn btn-outline-secondary btn-sm mb-3">&larr; Back to Postings</a>
+    <h2>Applicants for "{{ internship.title }}"</h2>
+
+    <form method="GET" class="card card-body mb-4">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-5">
+                <label for="name" class="form-label">Search by Applicant Name</label>
+                <input type="text" id="name" name="name" class="form-control" value="{{ search_name or '' }}">
+            </div>
+            <div class="col-md-5">
+                <label for="status" class="form-label">Filter by Status</label>
+                <select id="status" name="status" class="form-select">
+                    <option value="">All Statuses</option>
+                    <option value="pending" {% if search_status == 'pending' %}selected{% endif %}>Pending</option>
+                    <option value="viewed" {% if search_status == 'viewed' %}selected{% endif %}>Viewed</option>
+                    <option value="shortlisted" {% if search_status == 'shortlisted' %}selected{% endif %}>Shortlisted</option>
+                    <option value="accepted" {% if search_status == 'accepted' %}selected{% endif %}>Accepted</option>
+                    <option value="rejected" {% if search_status == 'rejected' %}selected{% endif %}>Rejected</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">Filter</button>
+            </div>
+        </div>
+    </form>
+    
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>Applicant Name</th>
+                    <th>University</th>
+                    <th>Applied On</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for applicant in applicants %}
+                <tr>
+                    <td>
+                        <strong>{{ applicant.full_name }}</strong><br>
+                        <small class="text-muted">{{ applicant.email }}</small>
+                    </td>
+                    <td>{{ applicant.university }}</td>
+                    <td>{{ applicant.application_date.strftime('%d %b %Y') }}</td>
+                    <td>
+                        
+                        {% if applicant.status == 'accepted' %}
+                            <span class="badge bg-success">{{ applicant.status|capitalize }}</span>
+                        {% elif applicant.status == 'rejected' %}
+                            <span class="badge bg-danger">{{ applicant.status|capitalize }}</span>
+                        {% elif applicant.status == 'shortlisted' %}
+                            <span class="badge bg-primary">{{ applicant.status|capitalize }}</span>
+                        {% else %}
+                            <span class="badge bg-secondary">{{ applicant.status|capitalize }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        
+                        {% if applicant.resume_url %}
+                            <a href="{{ url_for('static', filename=applicant.resume_url.replace('static/', '', 1)) }}" class="btn btn-sm btn-outline-secondary" target="_blank" title="View CV">
+                                <i class="bi bi-file-earmark-person-fill"></i> CV
+                            </a>
+                        {% else %}
+                            <span class="btn btn-sm btn-outline-secondary disabled">No CV</span>
+                        {% endif %}
+
+                        
+                        {% if applicant.status not in ['accepted', 'rejected'] %}
+                           
+                            <form action="{{ url_for('employer.manage_application_status', application_id=applicant.application_id, new_status='accepted') }}" method="POST" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-success" title="Accept Application">
+                                    <i class="bi bi-check-circle-fill"></i> Accept
+                                </button>
+                            </form>
+
+                            
+                            <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#rejectModal-{{ applicant.application_id }}" title="Reject Application">
+                                <i class="bi bi-x-circle-fill"></i> Reject
+                            </button>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+
+                {% if not applicants %}
+                <tr>
+                    <td colspan="5" class="text-center">No applicants found matching your criteria.</td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% for applicant in applicants %}
+<div class="modal fade" id="rejectModal-{{ applicant.application_id }}" tabindex="-1" aria-labelledby="rejectModalLabel-{{ applicant.application_id }}" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form action="{{ url_for('employer.manage_application_status', application_id=applicant.application_id, new_status='rejected') }}" method="POST">
+        <div class="modal-header">
+          <h5 class="modal-title" id="rejectModalLabel-{{ applicant.application_id }}">Reject Application for {{ applicant.full_name }}</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <div class="mb-3">
+              <label for="feedback-{{ applicant.application_id }}" class="form-label">Feedback (Optional)</label>
+              <textarea class="form-control" id="feedback-{{ applicant.application_id }}" name="feedback" rows="3" placeholder="Provide a reason for rejection..."></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-danger">Confirm Rejection</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endfor %}
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+{% endblock %}
