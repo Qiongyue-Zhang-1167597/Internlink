@@ -123,4 +123,32 @@ INSERT INTO `application` (`application_id`, `student_id`, `internship_id`, `sta
 (19, 19, 19, 'pending', NULL),
 (20, 20, 20, 'pending', NULL);
 
+UPDATE internship 
+SET category = 'IT' 
+WHERE title LIKE '%Developer%' OR title LIKE '%Software%' OR title LIKE '%AWS%' OR title LIKE '%QA Tester%';
+
+UPDATE internship 
+SET category = 'Marketing' 
+WHERE title LIKE '%Marketing%';
+
+UPDATE internship 
+SET category = 'Finance' 
+WHERE title LIKE '%Analyst%';
+
+UPDATE internship 
+SET category = 'Human Resources' 
+WHERE title LIKE '%HR%';
+
+UPDATE internship SET category = 'Product' WHERE title LIKE '%Product Management%';
+UPDATE internship SET category = 'Data' WHERE title LIKE '%Data Engineering%' OR title LIKE '%Business Intelligence%';
+UPDATE internship SET category = 'Design' WHERE title LIKE '%UX/UI Design%';
+UPDATE internship SET category = 'IT' WHERE title LIKE '%Database Administrator%' OR title LIKE '%DevOps%' OR title LIKE '%Cybersecurity%';
+UPDATE internship SET category = 'Data' WHERE title LIKE '%Machine Learning%';
+
+UPDATE internship SET category = 'Human Resources' WHERE title LIKE '%Clinical Informatics%' OR title LIKE '%Healthcare IT%';
+
+UPDATE internship SET category = 'Data' WHERE title LIKE '%Natural Language Processing%' OR title LIKE '%AI Research%';
+
+UPDATE internship SET category = 'IT' WHERE title LIKE '%QA Tester%';
+
 SELECT 'Initial data populated successfully.' AS 'Status';
