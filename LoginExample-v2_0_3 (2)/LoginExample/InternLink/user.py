@@ -188,12 +188,12 @@ def profile():
         elif role == 'employer':
             company_name = request.form.get('company_name', '').strip()
             company_description = request.form.get('company_description', '').strip()
-            company_website = request.form.get('company_website', '').strip()
+            company_website = request.form.get('website', '').strip()
             with db_conn.cursor() as cursor:
-                cursor.execute("UPDATE employer SET company_name = %s, company_description = %s, company_website = %s WHERE user_id = %s", 
+                cursor.execute("UPDATE employer SET company_name = %s, company_description = %s, website = %s WHERE user_id = %s", 
                                (company_name, company_description, company_website, user_id))
             
-            logo_file = request.files.get('company_logo')
+            logo_file = request.files.get('logo_path')
             if logo_file and logo_file.filename != '':
                 allowed_extensions = {'png', 'jpg', 'jpeg', 'gif'}
                 file_ext = logo_file.filename.rsplit('.', 1)[1].lower()
@@ -208,7 +208,7 @@ def profile():
 
                     logo_url_for_db = f'static/logos/{filename}'
                     with db_conn.cursor() as cursor:
-                        cursor.execute("UPDATE employer SET company_logo = %s WHERE user_id = %s", (logo_url_for_db, user_id))
+                        cursor.execute("UPDATE employer SET logo_path = %s WHERE user_id = %s", (logo_url_for_db, user_id))
                     flash("Company logo updated successfully.", "info")
 
         db_conn.commit()
@@ -222,7 +222,7 @@ def profile():
             profile_data = cursor.fetchone()
         
         elif role == 'employer':
-            cursor.execute("SELECT u.user_id, u.username, u.email, u.full_name, e.company_name, e.company_description, e.company_website, e.company_logo FROM user u LEFT JOIN employer e ON u.user_id = e.user_id WHERE u.user_id = %s", (user_id,))
+            cursor.execute("SELECT u.user_id, u.username, u.email, u.full_name, e.company_name, e.company_description, e.website, e.logo_path FROM user u LEFT JOIN employer e ON u.user_id = e.user_id WHERE u.user_id = %s", (user_id,))
             profile_data = cursor.fetchone()
 
         elif role == 'admin':
@@ -248,7 +248,7 @@ def profile():
         
         elif role == 'employer':
             cursor.execute("""
-                SELECT u.user_id, u.username, u.email, u.full_name, e.company_name, e.company_description, e.company_website, e.company_logo
+                SELECT u.user_id, u.username, u.email, u.full_name, e.company_name, e.company_description, e.website, e.logo_path
                 FROM user u
                 LEFT JOIN employer e ON u.user_id = e.user_id
                 WHERE u.user_id = %s
