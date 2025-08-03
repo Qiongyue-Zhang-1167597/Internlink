@@ -85,4 +85,12 @@ CREATE TABLE `application` (
     ON DELETE CASCADE ON UPDATE NO ACTION
 );
 
+ALTER TABLE `application`
+ADD COLUMN `resume_url` VARCHAR(255) NULL AFTER `feedback`,
+ADD COLUMN `cover_letter` TEXT NULL AFTER `resume_url`,
+ADD COLUMN `application_date` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP AFTER `cover_letter`;
+
+ALTER TABLE internship
+ADD COLUMN category VARCHAR(100) NULL DEFAULT NULL AFTER description;
+
 SELECT 'Database InternLink and all tables created successfully.' AS 'Status';
