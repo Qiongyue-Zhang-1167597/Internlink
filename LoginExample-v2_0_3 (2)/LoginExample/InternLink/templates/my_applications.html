@@ -1,0 +1,48 @@
+{% extends 'userbase.html' %}
+
+{% block title %}My Applications{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h2 class="mb-4">My Applications</h2>
+
+    <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>Company</th>
+                    <th>Internship Title</th>
+                    <th>Application Date</th>
+                    <th>Status</th>
+                    <th>Employer Feedback</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for app in applications %}
+                <tr>
+                    <td>{{ app.company_name }}</td>
+                    <td>{{ app.internship_title }}</td>
+                    <td>{{ app.application_date.strftime('%d %b %Y') }}</td>
+                    <td>
+                        {% if app.status == 'accepted' %}
+                            <span class="badge bg-success fs-6">{{ app.status|capitalize }}</span>
+                        {% elif app.status == 'rejected' %}
+                            <span class="badge bg-danger fs-6">{{ app.status|capitalize }}</span>
+                        {% elif app.status == 'shortlisted' %}
+                            <span class="badge bg-info fs-6">{{ app.status|capitalize }}</span>
+                        {% else %}
+                            <span class="badge bg-secondary fs-6">{{ app.status|capitalize }}</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ app.feedback if app.feedback else 'No feedback yet' }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="text-center py-4">You have not applied for any internships yet. <a href="{{ url_for('browse_internships') }}">Browse now!</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
