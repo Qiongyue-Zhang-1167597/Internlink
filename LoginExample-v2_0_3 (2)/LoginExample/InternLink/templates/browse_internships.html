@@ -4,45 +4,81 @@
 
 {% block content %}
 <div class="container py-5">
-  <h2 class="mb-4">Browse Internships</h2>
+    <h2 class="mb-4">Browse Internships</h2>
 
-  <form method="get" class="row g-3 mb-4">
-    <div class="col-md-4">
-      <input type="text" class="form-control" name="location" placeholder="Filter by location">
-    </div>
-    <div class="col-md-4">
-      <input type="text" class="form-control" name="duration" placeholder="Filter by duration">
-    </div>
-    <div class="col-md-4">
-      <button type="submit" class="btn btn-primary">Apply Filters</button>
-    </div>
-  </form>
+    <form method="get" action="{{ url_for('student.browse_internships') }}" class="mb-4">
+        <div class="row g-3 align-items-end">
+            
+            <div class="col-lg-3 col-md-6">
+                <label for="search" class="form-label">Search Title/Company</label>
+                <input type="text" class="form-control" id="search" name="search" placeholder="e.g., Web Developer" value="{{ search or '' }}">
+            </div>
 
-  <table class="table table-striped">
-    <thead>
-      <tr>
-        <th>Title</th>
-        <th>Company</th>
-        <th>Location</th>
-        <th>Duration</th>
-        <th>Deadline</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for item in internships %}
-      <tr>
-        <td>{{ item.title }}</td>
-        <td>{{ item.company_name }}</td>
-        <td>{{ item.location }}</td>
-        <td>{{ item.duration }}</td>
-        <td>{{ item.application_deadline }}</td>
-      </tr>
-      {% else %}
-      <tr>
-        <td colspan="5">No internships found.</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+            <div class="col-lg-2 col-md-6">
+                <label for="location" class="form-label">Location</label>
+                <input type="text" class="form-control" id="location" name="location" placeholder="e.g., Singapore" value="{{ location or '' }}">
+            </div>
+
+            <div class="col-lg-3 col-md-6">
+                <label for="category" class="form-label">Category</label>
+                <select id="category" name="category" class="form-select">
+                    <option value="">All Categories</option>
+                    <option value="IT" {% if category == 'IT' %}selected{% endif %}>Information Technology</option>
+                    <option value="Marketing" {% if category == 'Marketing' %}selected{% endif %}>Marketing</option>
+                    <option value="Finance" {% if category == 'Finance' %}selected{% endif %}>Finance</option>
+                    <option value="Human Resources" {% if category == 'Human Resources' %}selected{% endif %}>Human Resources</option>
+                </select>
+            </div>
+
+            <div class="col-lg-2 col-md-6">
+                <label for="duration" class="form-label">Duration</label>
+                <select id="duration" name="duration" class="form-select">
+                    <option value="">All Durations</option>
+                    <option value="12 Weeks" {% if duration == '12 Weeks' %}selected{% endif %}>12 Weeks</option>
+                    <option value="10 Weeks" {% if duration == '10 Weeks' %}selected{% endif %}>10 Weeks</option>
+                    <option value="4 Months" {% if duration == '4 Months' %}selected{% endif %}>4 Months</option>
+                    <option value="3 Months" {% if duration == '3 Months' %}selected{% endif %}>3 Months</option>
+                    <option value="Full Semester" {% if duration == 'Full Semester' %}selected{% endif %}>Full Semester</option>
+                </select>
+            </div>
+
+            <div class="col-lg-2 col-md-12">
+                <button type="submit" class="btn btn-primary w-100">Filter</button>
+            </div>
+        </div>
+    </form>
+
+    <table class="table table-striped table-hover align-middle">
+        <thead class="table-dark">
+            <tr>
+                <th>Title</th>
+                <th>Company</th>
+                <th>Location</th>
+                <th>Category</th> 
+                <th>Duration</th>
+                <th>Deadline</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in internships %}
+            <tr>
+                <td><strong>{{ item.title }}</strong></td>
+                <td>{{ item.company_name }}</td>
+                <td>{{ item.location }}</td>
+                <td><span class="badge bg-secondary">{{ item.category }}</span></td> 
+                <td>{{ item.duration }}</td>
+                <td>{{ item.deadline.strftime('%d %b %Y') }}</td>
+                <td>
+                    <a href="{{ url_for('student.apply_internship', internship_id=item.internship_id) }}" class="btn btn-sm btn-info">View & Apply</a>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="7" class="text-center py-4">No internships found matching your criteria.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
 {% endblock %}
