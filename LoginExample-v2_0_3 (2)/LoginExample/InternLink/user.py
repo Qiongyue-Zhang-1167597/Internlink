@@ -1,280 +1,326 @@
-from InternLink import app
-from InternLink import db
-from flask import redirect, render_template, request, session, url_for
-from flask_bcrypt import Bcrypt
+import os
 import re
 import string
-import os
+
+
+from flask import Blueprint, redirect, render_template, request, session, url_for, flash, current_app
+from flask_bcrypt import Bcrypt
 from werkzeug.utils import secure_filename
-from InternLink import app 
 
-# Create an instance of the Bcrypt class, which we'll be using to hash user
-# passwords during login and registration.
-flask_bcrypt = Bcrypt(app)
 
-# Default role assigned to new users upon registration.
+from .db import get_db
+from .utils import login_required, role_required, is_password_strong
+
+
+flask_bcrypt = Bcrypt()
+
+
+user_bp = Blueprint('user', __name__)
+
+
 DEFAULT_USER_ROLE = 'student'
 
 def user_home_url():
-    """Generates a URL to the homepage for the currently logged-in user.
-    
-    If the user is not logged in, this returns the URL for the login page
-    instead. If the user appears to be logged in, but the role stored in their
-    session cookie is invalid (i.e. not a recognised role), it returns the URL
-    for the logout page to clear that invalid session data."""
+    """Generates a URL to the homepage for the currently logged-in user."""
     if 'loggedin' in session:
         role = session.get('role', None)
-
+        
         if role=='student':
-            home_endpoint='student_home'
+            home_endpoint='student.student_home'
         elif role=='employer':
-            home_endpoint='employer_home'
+            home_endpoint='employer.employer_home'
         elif role=='admin':
-            home_endpoint='admin_home'
+            home_endpoint='admin.admin_home'
         else:
-            home_endpoint = 'logout'
+            home_endpoint = 'user.logout'
     else:
-        home_endpoint = 'login'
+        home_endpoint = 'user.login'
     
     return url_for(home_endpoint)
 
-@app.route('/')
+@user_bp.route('/')
 def root():
-    """Root endpoint (/)
-    
-    Methods:
-    - get: Redirects guests to the login page, and redirects logged-in users to
-        their own role-specific homepage.
-    """
+    """Root endpoint (/)"""
     return redirect(user_home_url())
 
-@app.route('/login', methods=['GET', 'POST'])
+@user_bp.route('/login', methods=['GET', 'POST'])
 def login():
-    """Login page endpoint.
-
-    Methods:
-    - get: Renders the login page.
-    - post: Attempts to log the user in using the credentials supplied via the
-        login form, and either:
-        - Redirects the user to their role-specific homepage (if successful)
-        - Renders the login page again with an error message (if unsuccessful).
-    
-    If the user is already logged in, both get and post requests will redirect
-    to their role-specific homepage.
-    """
+    """Login page endpoint."""
     if 'loggedin' in session:
          return redirect(user_home_url())
 
     if request.method=='POST' and 'username' in request.form and 'password' in request.form:
-        # Get the login details submitted by the user.
         username = request.form['username']
         password = request.form['password']
 
-        # Attempt to validate the login details against the database.
-        with db.get_cursor(dictionary=True) as cursor:
-            # Try to retrieve the account details for the specified username.
-            #
-            # Note: we use a Python multiline string (triple quote) here to
-            # make the query more readable in source code. This is just a style
-            # choice: the line breaks are ignored by MySQL, and it would be
-            # equally valid to put the whole SQL statement on one line like we
-            # do at the beginning of the `signup` function.
-            cursor.execute('''
-                           SELECT user_id, username, password_hash, role
-                           FROM user
-                           WHERE username = %s;
-                           ''', (username,))
+        with get_db().cursor(dictionary=True) as cursor:
+            cursor.execute('SELECT user_id, username, password_hash, role FROM user WHERE username = %s;', (username,))
             account = cursor.fetchone()
             
-            if account is not None:
-                # We found a matching account: now we need to check whether the
-                # password they supplied matches the hash in our database.
-                password_hash = account['password_hash']
-                
-                if flask_bcrypt.check_password_hash(password_hash, password):
-                    # Password is correct. Save the user's ID, username, and role
-                    # as session data, which we can access from other routes to
-                    # determine who's currently logged in.
-                    # 
-                    # Users can potentially see and edit these details using their
-                    # web browser. However, the session cookie is signed with our
-                    # app's secret key. That means if they try to edit the cookie
-                    # to impersonate another user, the signature will no longer
-                    # match and Flask will know the session data is invalid.
-                    session['loggedin'] = True
-                    session['user_id'] = account['user_id']
-                    session['username'] = account['username']
-                    session['role'] = account['role']
+            if account and flask_bcrypt.check_password_hash(account['password_hash'], password):
+                session.clear()
+                session['loggedin'] = True
+                session['user_id'] = account['user_id']
+                session['username'] = account['username']
+                session['role'] = account['role']
 
-                    if session['role'] == 'student':
-                        return redirect(url_for('student_home'))
-                    elif session['role'] == 'employer':
-                        return redirect(url_for('employer_home'))
-                    elif session['role'] == 'admin':
-                        return redirect(url_for('admin_home'))
-                    else:
-                        return redirect(url_for('access_denied'))
-
-                else:
-                    return render_template('login.html',
-                                           username=username,
-                                           password_invalid=True)
+                return redirect(user_home_url())
             else:
-                return render_template('login.html',
-                                       username=username,
-                                       username_invalid=True)
+                flash("Invalid username or password.", "danger")
+                return redirect(url_for('user.login'))
 
     return render_template('login.html')
 
-@app.route('/signup', methods=['GET','POST'])
+@user_bp.route('/signup', methods=['GET','POST'])
 def signup():
     if 'loggedin' in session:
          return redirect(user_home_url())
     
-    if request.method == 'POST' and 'username' in request.form and 'email' in request.form and 'password' in request.form:
-  
-        if 'loggedin' in session:
-         return redirect(user_home_url())
-    
-        if request.method == 'POST':
+
+    form_data = {
+        'username': '', 'email': '', 'full_name': '', 'university': '', 'course': ''
+    }
+    error_data = {
+        'username_error': None, 'email_error': None, 'password_error': None
+    }
+
+    if request.method == 'POST':
+
+        form_data['username'] = request.form.get('username', '').strip()
+        form_data['email'] = request.form.get('email', '').strip()
+        password = request.form.get('password', '')
+        confirm_password = request.form.get('confirm', '')
+        form_data['full_name'] = request.form.get('full_name', '').strip()
+        form_data['university'] = request.form.get('university', '').strip()
+        form_data['course'] = request.form.get('course', '').strip()
+
+        db_conn = get_db()
+        with db_conn.cursor(dictionary=True) as cursor:
+            cursor.execute('SELECT user_id FROM user WHERE username = %s;', (form_data['username'],))
+            if cursor.fetchone():
+                error_data['username_error'] = 'An account already exists with this username.'
+            
+            cursor.execute('SELECT user_id FROM user WHERE email = %s;', (form_data['email'],))
+            if cursor.fetchone():
+                error_data['email_error'] = 'An account already exists with this email address.'
         
-            print("--- Form Data Received ---")
-            print(request.form)
+        if password != confirm_password:
+            error_data['password_error'] = "Passwords do not match."
+        else:
+            is_strong, message = is_password_strong(password)
+            if not is_strong:
+                error_data['password_error'] = message
         
-        username = request.form['username'].strip()
-        email = request.form['email'].strip()
-        password = request.form['password']
-        full_name = request.form.get('full_name', '').strip()
-        university = request.form.get('university', '').strip()
-        course = request.form.get('course', '').strip()
+        if any(error_data.values()):
+            return render_template('signup.html', **form_data, **error_data)
+
+
         profile_image_file = request.files.get('profile_image')
         resume_pdf_file = request.files.get('resume_pdf')
-
+        
         profile_image_filename = None
         resume_pdf_filename = None
         
-        upload_folder = app.config.get('UPLOAD_FOLDER', os.path.join(app.root_path, 'static', 'uploads'))
-        if not os.path.exists(upload_folder):
-            os.makedirs(upload_folder)
-
-        if profile_image_file and profile_image_file.filename != '':
-            profile_image_filename = secure_filename(profile_image_file.filename)
-            profile_image_file.save(os.path.join(upload_folder, profile_image_filename))
-            profile_image_filename = os.path.join('uploads', profile_image_filename).replace("\\", "/")
-
-        if resume_pdf_file and resume_pdf_file.filename != '':
-            resume_pdf_filename = secure_filename(resume_pdf_file.filename)
-            resume_pdf_file.save(os.path.join(upload_folder, resume_pdf_filename))
-            resume_pdf_filename = os.path.join('uploads', resume_pdf_filename).replace("\\", "/")
-
-        username_error = None
-        email_error = None
-        password_error = None
+        upload_folder = current_app.config.get('UPLOAD_FOLDER')
 
         
-        with db.get_cursor(dictionary=True) as cursor:
-            cursor.execute('SELECT `user_id` FROM `user` WHERE `username` = %s;', (username,))
-            if cursor.fetchone():
-                username_error = 'An account already exists with this username.'
-            
-            cursor.execute('SELECT `user_id` FROM `user` WHERE `email` = %s;', (email,))
-            if cursor.fetchone():
-                email_error = 'An account already exists with this email address.'
-
-        if not username_error:
-            if len(username) > 50:
-                username_error = 'Your username cannot exceed 50 characters.'
-            elif not re.match(r'^[A-Za-z0-9_]+$', username):
-                username_error = 'Your username can only contain letters, numbers, and underscores.'
-
-        if not email_error:
-            if len(email) > 100:
-                email_error = 'Your email address cannot exceed 100 characters.'
-            elif not re.match(r'[^@]+@[^@]+\.[^@]+', email):
-                email_error = 'Invalid email address.'
-
-        
-        password_regex = re.compile(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[' + re.escape(string.punctuation) + r']).{8,}$')
-        
-        
-        confirm_password = request.form.get('confirm', '')
-
-        
-        if not password_regex.match(password):
-            password_error = 'Password must be at least 8 characters long and contain uppercase, lowercase, a number, and a special character.'
-        
-        elif password != confirm_password:
-            password_error = 'Passwords do not match.'
-
-        if (username_error or email_error or password_error):
-            return render_template('signup.html',
-                                   username=username, email=email, full_name=full_name,
-                                   university=university, course=course,
-                                   username_error=username_error, email_error=email_error,
-                                   password_error=password_error)
-
- 
         password_hash = flask_bcrypt.generate_password_hash(password).decode('utf-8')
         
-        with db.get_cursor() as cursor:
-            sql_user = """
-                INSERT INTO `user` (`username`, `password_hash`, `email`, `role`, `status`, `full_name`, `profile_image`)
-                VALUES (%s, %s, %s, %s, %s, %s, %s);
-            """
-            cursor.execute(sql_user, (username, password_hash, email, DEFAULT_USER_ROLE, 'active', full_name, profile_image_filename))
+        with db_conn.cursor() as cursor:
+            sql_user = "INSERT INTO `user` (`username`, `password_hash`, `email`, `role`, `status`, `full_name`, `profile_image`) VALUES (%s, %s, %s, %s, %s, %s, %s);"
+            cursor.execute(sql_user, (
+                form_data['username'], password_hash, form_data['email'], 
+                DEFAULT_USER_ROLE, 'active', form_data['full_name'], profile_image_filename
+            ))
             
             new_user_id = cursor.lastrowid
             
             if new_user_id:
-                sql_student = """
-                    INSERT INTO `student` (`user_id`, `university`, `course`, `resume_path`)
-                    VALUES (%s, %s, %s, %s);
-                """
-                cursor.execute(sql_student, (new_user_id, university, course, resume_pdf_filename))
+                sql_student = "INSERT INTO `student` (`user_id`, `university`, `course`, `resume_path`) VALUES (%s, %s, %s, %s);"
+                cursor.execute(sql_student, (
+                    new_user_id, form_data['university'], form_data['course'], resume_pdf_filename
+                ))
             
-            db.get_db().commit()
+            db_conn.commit()
             
-        return render_template('signup.html', signup_successful=True)
+        flash("Signup successful! Please log in.", "success")
+        return redirect(url_for('user.login'))
 
-    return render_template('signup.html')
+    return render_template('signup.html', **form_data, **error_data)
 
 
-@app.route('/profile')
+@user_bp.route('/profile', methods=['GET', 'POST'])
+@login_required
 def profile():
-    """User Profile page endpoint.
-
-    Methods:
-    - get: Renders the user profile page for the current user.
-
-    If the user is not logged in, requests will redirect to the login page.
-    """
-    if 'loggedin' not in session:
-         return redirect(url_for('login'))
-
-    # Retrieve user profile from the database.
-    with db.get_cursor(dictionary=True) as cursor:
-        cursor.execute('SELECT username, email, role FROM user WHERE user_id = %s;',
-                       (session['user_id'],))
-        profile = cursor.fetchone()
-
-    return render_template('profile.html', profile=profile)
-
-@app.route('/logout')
-def logout():
-    """Logout endpoint.
-
-    Methods:
-    - get: Logs the current user out (if they were logged in to begin with),
-        and redirects them to the login page.
-    """
-    # Note that nothing actually happens on the server when a user logs out: we
-    # just remove the cookie from their web browser. They could technically log
-    # back in by manually restoring the cookie we've just deleted. In a high-
-    # security web app, you may need additional protections against this (e.g.
-    # keeping a record of active sessions on the server side).
-    session.pop('loggedin', None)
-    session.pop('user_id', None)
-    session.pop('username', None)
-    session.pop('role', None)
+    user_id = session['user_id']
+    role = session['role']
+    db_conn = get_db()
     
-    return redirect(url_for('login'))
+
+    if request.method == 'POST':
+
+        full_name = request.form.get('full_name', '').strip()
+        with db_conn.cursor() as cursor:
+            cursor.execute("UPDATE user SET full_name = %s WHERE user_id = %s", (full_name, user_id))
+        
+        if role == 'student':
+            university = request.form.get('university', '').strip()
+            course = request.form.get('course', '').strip()
+            with db_conn.cursor() as cursor:
+                cursor.execute("UPDATE student SET university = %s, course = %s WHERE user_id = %s", (university, course, user_id))
+
+            resume_file = request.files.get('resume')
+            if resume_file and resume_file.filename != '':
+                if not resume_file.filename.lower().endswith('.pdf'):
+                    flash("Resume must be a PDF file.", "danger")
+                else:
+                    filename = secure_filename(f"resume_{user_id}.pdf")
+                    upload_folder = os.path.join(current_app.root_path, 'static', 'resumes')
+                    os.makedirs(upload_folder, exist_ok=True)
+                    resume_path = os.path.join(upload_folder, filename)
+                    resume_file.save(resume_path)
+                    
+                    resume_url_for_db = f'static/resumes/{filename}'
+                    with db_conn.cursor() as cursor:
+                        cursor.execute("UPDATE student SET resume_path = %s WHERE user_id = %s", (resume_url_for_db, user_id))
+                    flash("Resume updated successfully.", "info")
+
+        elif role == 'employer':
+            company_name = request.form.get('company_name', '').strip()
+            company_description = request.form.get('company_description', '').strip()
+            company_website = request.form.get('company_website', '').strip()
+            with db_conn.cursor() as cursor:
+                cursor.execute("UPDATE employer SET company_name = %s, company_description = %s, company_website = %s WHERE user_id = %s", 
+                               (company_name, company_description, company_website, user_id))
+            
+            logo_file = request.files.get('company_logo')
+            if logo_file and logo_file.filename != '':
+                allowed_extensions = {'png', 'jpg', 'jpeg', 'gif'}
+                file_ext = logo_file.filename.rsplit('.', 1)[1].lower()
+                if file_ext not in allowed_extensions:
+                    flash("Invalid image file type for logo.", "danger")
+                else:
+                    filename = secure_filename(f"logo_{user_id}.{file_ext}")
+                    upload_folder = os.path.join(current_app.root_path, 'static', 'logos')
+                    os.makedirs(upload_folder, exist_ok=True)
+                    logo_path = os.path.join(upload_folder, filename)
+                    logo_file.save(logo_path)
+
+                    logo_url_for_db = f'static/logos/{filename}'
+                    with db_conn.cursor() as cursor:
+                        cursor.execute("UPDATE employer SET company_logo = %s WHERE user_id = %s", (logo_url_for_db, user_id))
+                    flash("Company logo updated successfully.", "info")
+
+        db_conn.commit()
+        flash("Profile updated successfully!", "success")
+        return redirect(url_for('user.profile'))
+
+    profile_data = None
+    with db_conn.cursor(dictionary=True) as cursor:
+        if role == 'student':
+            cursor.execute("SELECT u.user_id, u.username, u.email, u.full_name, s.university, s.course, s.resume_path FROM user u LEFT JOIN student s ON u.user_id = s.user_id WHERE u.user_id = %s", (user_id,))
+            profile_data = cursor.fetchone()
+        
+        elif role == 'employer':
+            cursor.execute("SELECT u.user_id, u.username, u.email, u.full_name, e.company_name, e.company_description, e.company_website, e.company_logo FROM user u LEFT JOIN employer e ON u.user_id = e.user_id WHERE u.user_id = %s", (user_id,))
+            profile_data = cursor.fetchone()
+
+        elif role == 'admin':
+            cursor.execute("SELECT user_id, username, email, full_name FROM user WHERE user_id = %s", (user_id,))
+            profile_data = cursor.fetchone()
+
+    if not profile_data:
+        flash("Could not retrieve profile data.", "danger")
+        return redirect(url_for('user.root'))
+
+    return render_template('profile.html', profile=profile_data)
+
+    profile_data = None
+    with db_conn.cursor(dictionary=True) as cursor:
+        if role == 'student':
+            cursor.execute("""
+                SELECT u.user_id, u.username, u.email, u.full_name, s.university, s.course, s.resume_path
+                FROM user u
+                LEFT JOIN student s ON u.user_id = s.user_id
+                WHERE u.user_id = %s
+            """, (user_id,))
+            profile_data = cursor.fetchone()
+        
+        elif role == 'employer':
+            cursor.execute("""
+                SELECT u.user_id, u.username, u.email, u.full_name, e.company_name, e.company_description, e.company_website, e.company_logo
+                FROM user u
+                LEFT JOIN employer e ON u.user_id = e.user_id
+                WHERE u.user_id = %s
+            """, (user_id,))
+            profile_data = cursor.fetchone()
+
+        elif role == 'admin':
+            cursor.execute("SELECT user_id, username, email, full_name FROM user WHERE user_id = %s", (user_id,))
+            profile_data = cursor.fetchone()
+
+    if not profile_data:
+        flash("Could not retrieve profile data.", "danger")
+        return redirect(url_for('user.root'))
+
+    return render_template('profile.html', profile=profile_data)
+
+@user_bp.route('/logout')
+def logout():
+    """Logout endpoint."""
+    session.clear()
+    flash("You have been logged out.", "info")
+    return redirect(url_for('user.login'))
+
+@user_bp.route('/access_denied')
+@login_required
+def access_denied():
+    """Renders a generic 'access denied' page."""
+    return render_template('access_denied.html')
+
+@user_bp.route('/change-password', methods=['GET', 'POST'])
+@login_required
+def change_password():
+    if request.method == 'POST':
+        user_id = session['user_id']
+        current_password = request.form.get('current_password')
+        new_password = request.form.get('new_password')
+        confirm_password = request.form.get('confirm_password')
+
+        db_conn = get_db()
+        with db_conn.cursor(dictionary=True) as cursor:
+            cursor.execute("SELECT password_hash FROM user WHERE user_id = %s", (user_id,))
+            user = cursor.fetchone()
+
+        if not user:
+            flash("User not found.", "danger")
+            return redirect(url_for('user.logout'))
+
+        if not flask_bcrypt.check_password_hash(user['password_hash'], current_password):
+            flash("Your current password was incorrect.", "danger")
+            return redirect(url_for('user.change_password'))
+        
+        if new_password != confirm_password:
+            flash("New passwords do not match.", "danger")
+            return redirect(url_for('user.change_password'))
+            
+        if new_password == current_password:
+            flash("New password cannot be the same as the current password.", "danger")
+            return redirect(url_for('user.change_password'))
+
+        is_strong, message = is_password_strong(new_password)
+        if not is_strong:
+            
+            flash(message, "danger")
+            return redirect(url_for('user.change_password'))
+        
+      
+        new_password_hash = flask_bcrypt.generate_password_hash(new_password).decode('utf-8')
+        with db_conn.cursor() as cursor:
+            cursor.execute("UPDATE user SET password_hash = %s WHERE user_id = %s", (new_password_hash, user_id))
+        db_conn.commit()
+
+        flash("Your password has been updated successfully.", "success")
+        return redirect(url_for('user.profile'))
+
+    return render_template('change_password.html')
