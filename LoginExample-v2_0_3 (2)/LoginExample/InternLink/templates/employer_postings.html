@@ -1,0 +1,32 @@
+{% extends 'userbase.html' %}
+
+{% block title %}My Internship Postings{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>My Internship Postings</h2>
+    </div>
+
+    {% if postings %}
+    <div class="list-group">
+        {% for post in postings %}
+        <div class="list-group-item list-group-item-action flex-column align-items-start">
+            <div class="d-flex w-100 justify-content-between">
+                <h5 class="mb-1">{{ post.title }}</h5>
+                <span class="badge bg-primary rounded-pill">{{ post.applicant_count }} Applicants</span>
+            </div>
+            <p class="mb-1">
+                <small class="text-muted">Location: {{ post.location }} | Duration: {{ post.duration }} | Deadline: {{ post.deadline.strftime('%d %b %Y') }}</small>
+            </p>
+            <a href="{{ url_for('employer.view_applicants', internship_id=post.internship_id) }}" class="btn btn-sm btn-outline-success mt-2">View Applicants</a>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-info" role="alert">
+      You have not posted any internships yet.
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
