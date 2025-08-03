@@ -1,0 +1,60 @@
+{% extends 'userbase.html' %} 
+
+{% block title %}All Student Applications{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <h2 class="mb-4">All Student Applications</h2>
+
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>App ID</th>
+                    <th>Student Name</th>
+                    <th>Internship Title</th>
+                    <th>Company</th>
+                    <th>Date Applied</th>
+                    <th>Status</th>
+                    <th>Resume</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for app in applications %}
+                <tr>
+                    <td>{{ app.application_id }}</td>
+                    <td>{{ app.first_name }} {{ app.last_name }}</td>
+                    <td>{{ app.internship_title }}</td>
+                    <td>{{ app.company_name }}</td>
+                    <td>{{ app.application_date.strftime('%Y-%m-%d') }}</td>
+                    <td>
+                        
+                        {% if app.status == 'accepted' %}
+                            <span class="badge bg-success">{{ app.status|capitalize }}</span>
+                        {% elif app.status == 'rejected' %}
+                            <span class="badge bg-danger">{{ app.status|capitalize }}</span>
+                        {% elif app.status == 'shortlisted' %}
+                            <span class="badge bg-info">{{ app.status|capitalize }}</span>
+                        {% else %}
+                            <span class="badge bg-secondary">{{ app.status|capitalize }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        
+                        {% if app.resume_url %}
+                            <a href="{{ url_for('static', filename=app.resume_url.replace('static/', '', 1)) }}" class="btn btn-sm btn-outline-primary" target="_blank">View Resume</a>
+                        {% else %}
+                            <span>N/A</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" class="text-center py-4">No applications found in the system.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
