@@ -64,7 +64,7 @@
                         </div>
                          <div class="mb-3">
                             <label for="company_website" class="form-label">Company Website</label>
-                            <input type="url" id="company_website" name="company_website" class="form-control" value="{{ profile.website or '' }}">
+                            <input type="url" id="company_website" name="company_website" class="form-control" value="{{ profile.company_website or '' }}">
                         </div>
                          <div class="mb-3">
                             <label for="company_description" class="form-label">Company Description</label>
@@ -76,8 +76,23 @@
                         </div>
                         {% endif %}
                         
-                        {% if session.role == 'admin' %}
-
+                        {% if session.role|lower == 'admin' %}
+                        <hr>
+                        <h5 class="card-title">Admin Profile</h5>
+                        <div class="mb-3">
+                            <label for="full_name" class="form-label">Full Name</label>
+                            <input type="text" id="full_name" name="full_name" class="form-control" value="{{ profile.full_name or '' }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" id="email" name="email" class="form-control" value="{{ profile.email }}" required>
+                        </div>
+                        {% else %}
+                        <!-- 非admin显示disabled email -->
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email (cannot be changed)</label>
+                            <input type="email" id="email" class="form-control" value="{{ profile.email }}" disabled readonly>
+                        </div>
                         {% endif %}
 
                         <div class="mt-4">
