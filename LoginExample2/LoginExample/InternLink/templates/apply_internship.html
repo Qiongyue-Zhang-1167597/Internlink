@@ -7,33 +7,34 @@
     <div class="row justify-content-center">
         <div class="col-md-8">
             <h2 class="mb-4">Apply for: {{ internship.title }}</h2>
-
             <div class="card mb-4">
                 <div class="card-body">
                     <h5 class="card-title">Internship Details</h5>
+                    <p class="card-text"><strong>Title:</strong> {{ internship.title }}</p>
+                    <p class="card-text"><strong>Description:</strong> {{ internship.description }}</p>
                     <p class="card-text"><strong>Company:</strong> {{ internship.company_name }}</p>
                     <p class="card-text"><strong>Location:</strong> {{ internship.location }}</p>
                     <p class="card-text"><strong>Duration:</strong> {{ internship.duration }}</p>
-                    <hr>
+                    <p class="card-text"><strong>Deadline:</strong> {{ internship.deadline }}</p>
+                </div>
+                <hr>
+                <div class="card-body">
                     <h5 class="card-title">Your Pre-filled Information</h5>
-                    <p class="card-text"><strong>Full Name:</strong> {{ student.first_name }} {{ student.last_name }}</p>
+                    <p class="card-text"><strong>Full Name:</strong> {{ student.full_name }}</p>
                     <p class="card-text"><strong>Email:</strong> {{ student.email }}</p>
                     <p class="card-text"><strong>University:</strong> {{ student.university }}</p>
                 </div>
             </div>
-
             <form method="POST" enctype="multipart/form-data">
                 <div class="mb-3">
                     <label for="cover_letter" class="form-label"><strong>Cover Letter / Additional Note</strong></label>
                     <textarea class="form-control" id="cover_letter" name="cover_letter" rows="6" placeholder="Write a brief message to the employer..." required></textarea>
                 </div>
-                
                 <div class="mb-3">
                     <label for="resume" class="form-label"><strong>Upload Resume (PDF only)</strong></label>
                     <input class="form-control" type="file" id="resume" name="resume" accept=".pdf" required>
                     <div class="form-text">Please ensure your resume is in PDF format.</div>
                 </div>
-                
                 <button type="submit" class="btn btn-success w-100 mt-3">Submit Application</button>
             </form>
         </div>
