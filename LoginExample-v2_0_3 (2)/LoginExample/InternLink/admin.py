@@ -1,19 +1,62 @@
-
-from flask import Blueprint, render_template, request, redirect, url_for, session, flash
+from flask import Blueprint, render_template, request, redirect, url_for, session, flash, send_from_directory, current_app
 from .utils import login_required, role_required
 from .db import get_db
-
+import os  
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin')
 
-@admin_bp.route('/home')
+@admin_bp.route('/home', methods=['GET', 'POST'])
 @login_required
 @role_required('admin')
 def admin_home():
     db_conn = get_db()
+    username = session['username']
+    print("Debug: Session data:", session)  
+
     with db_conn.cursor(dictionary=True) as cursor:
-        username = session['username']
+       
         cursor.execute("SELECT * FROM user WHERE username = %s", (username,))
         user = cursor.fetchone()
+        print("Debug: Queried user:", user)  
+        
+        if not user:
+            flash("User not found.", "danger")
+            return redirect(url_for('login'))
+
+        if request.method == 'POST':
+            full_name = request.form.get('full_name', user['full_name'])
+            email = request.form.get('email', user['email'])
+            print("Debug: POST data:", request.form)
+            print("Debug: New values - full_name:", full_name, "email:", email)
+            print("Debug: Old values - full_name:", user['full_name'], "email:", user['email'])
+            
+            if email != user['email']:
+                cursor.execute("SELECT user_id FROM user WHERE email = %s AND user_id != %s", (email, user['user_id']))
+                if cursor.fetchone():
+                    flash('Email already in use.', 'danger')
+                    return render_template('admin_home.html', user=user)
+            
+           
+            update_query = "UPDATE user SET full_name = %s, email = %s WHERE user_id = %s"
+            cursor.execute(update_query, (full_name, email, user['user_id']))
+            db_conn.commit()
+            print("Debug: Update rowcount:", cursor.rowcount)
+            print("Debug: Updated with user_id:", user['user_id'])
+            
+            
+            cursor.execute("SELECT * FROM user WHERE user_id = %s", (user['user_id'],))
+            updated_user = cursor.fetchone()
+            print("Debug: Updated user from db:", updated_user)  
+            
+            if cursor.rowcount > 0:
+                flash('Profile updated successfully!', 'success')
+                user = updated_user  
+            elif full_name == user['full_name'] and email == user['email']:
+                flash('No changes were made (values are the same).', 'info')
+            else:
+                flash('Update failed (rowcount=0). Check if user_id matches db: ' + str(user['user_id']), 'warning')
+            
+            return redirect(url_for('admin.admin_home'))  
+    
     return render_template('admin_home.html', user=user)
 
 @admin_bp.route('/users')
@@ -76,11 +119,12 @@ def toggle_user_status(user_id):
             flash("User not found.", "danger")
             
     return redirect(url_for('admin.view_users')) 
+
 @admin_bp.route('/internships')
 @login_required
 @role_required('admin')
 def view_all_internships():
-    """Admin 查看所有实习的页面，支持完整筛选。"""
+    """Admin View all internship pages, supporting complete filtering."""
     db_conn = get_db()
     with db_conn.cursor(dictionary=True) as cursor:
         search_query = request.args.get('search', '')
@@ -128,24 +172,61 @@ def view_all_internships():
 @login_required
 @role_required('admin')
 def view_all_applications():
-    """Admin View all student applications page."""
+    """Admin View all student applications page, with search/filter support."""
     db_conn = get_db()
     with db_conn.cursor(dictionary=True) as cursor:
+       
+        search_student = request.args.get('search_student', '').strip()
+        search_company = request.args.get('search_company', '').strip()
+        filter_status = request.args.get('filter_status', '').strip()
 
         sql = """
             SELECT 
-                a.*, 
+                a.*,  -- includeresume_url
                 u.full_name,
                 i.title AS internship_title,
-                e.company_name
+                e.company_name,
+                a.resume_url  -- select resume_url（optional，but make sure）
             FROM application a
             JOIN student s ON a.student_id = s.student_id
             JOIN user u ON s.user_id = u.user_id
             JOIN internship i ON a.internship_id = i.internship_id
             JOIN employer e ON i.company_id = e.emp_id
-            ORDER BY a.application_date DESC
+            WHERE 1=1
         """
-        cursor.execute(sql)
+        params = []
+
+        if search_student:
+            sql += " AND u.full_name LIKE %s"
+            params.append(f"%{search_student}%")
+
+        if search_company:
+            sql += " AND e.company_name LIKE %s"
+            params.append(f"%{search_company}%")
+
+        if filter_status:
+            sql += " AND a.status = %s"
+            params.append(filter_status)
+
+        sql += " ORDER BY a.application_date DESC"
+        
+        cursor.execute(sql, tuple(params))
         applications = cursor.fetchall()
 
-    return render_template('admin_view_applications.html', applications=applications)
+   
+    status_options = ['', 'pending', 'accepted', 'short listed', 'rejected']  
+
+    return render_template('admin_view_applications.html', 
+                           applications=applications,
+                           search_student=search_student,
+                           search_company=search_company,
+                           filter_status=filter_status,
+                           status_options=status_options)
+
+@admin_bp.route('/download_resume/<path:filename>')
+@login_required
+@role_required('admin')
+def download_resume(filename):
+    
+    resumes_dir = os.path.join(current_app.root_path, 'static', 'resumes')  
+    return send_from_directory(resumes_dir, filename, as_attachment=False)  
