@@ -4,57 +4,80 @@
 
 {% block content %}
 <div class="container py-5">
-    <h2 class="mb-4">All Student Applications</h2>
+    <h2>All Student Applications</h2>
+    <hr>
 
-    <div class="table-responsive">
-        <table class="table table-bordered table-striped table-hover align-middle">
-            <thead class="table-dark">
-                <tr>
-                    <th>App ID</th>
-                    <th>Student Name</th>
-                    <th>Internship Title</th>
-                    <th>Company</th>
-                    <th>Date Applied</th>
-                    <th>Status</th>
-                    <th>Resume</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for app in applications %}
-                <tr>
-                    <td>{{ app.application_id }}</td>
-                    <td>{{ app.first_name }} {{ app.last_name }}</td>
-                    <td>{{ app.internship_title }}</td>
-                    <td>{{ app.company_name }}</td>
-                    <td>{{ app.application_date.strftime('%Y-%m-%d') }}</td>
-                    <td>
-                        
-                        {% if app.status == 'accepted' %}
-                            <span class="badge bg-success">{{ app.status|capitalize }}</span>
-                        {% elif app.status == 'rejected' %}
-                            <span class="badge bg-danger">{{ app.status|capitalize }}</span>
-                        {% elif app.status == 'shortlisted' %}
-                            <span class="badge bg-info">{{ app.status|capitalize }}</span>
-                        {% else %}
-                            <span class="badge bg-secondary">{{ app.status|capitalize }}</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        
-                        {% if app.resume_url %}
-                            <a href="{{ url_for('static', filename=app.resume_url.replace('static/', '', 1)) }}" class="btn btn-sm btn-outline-primary" target="_blank">View Resume</a>
-                        {% else %}
-                            <span>N/A</span>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% else %}
-                <tr>
-                    <td colspan="7" class="text-center py-4">No applications found in the system.</td>
-                </tr>
+   
+    <form method="GET" class="row g-3 mb-4">
+        <div class="col-md-3">
+            <label for="search_student" class="form-label">Filter by Student Name</label>
+            <input type="text" id="search_student" name="search_student" class="form-control" value="{{ search_student }}" placeholder="Enter student name">
+        </div>
+        <div class="col-md-3">
+            <label for="search_company" class="form-label">Filter by Company Name</label>
+            <input type="text" id="search_company" name="search_company" class="form-control" value="{{ search_company }}" placeholder="Enter company name">
+        </div>
+        <div class="col-md-3">
+            <label for="filter_status" class="form-label">Filter by Status</label>
+            <select id="filter_status" name="filter_status" class="form-select">
+                {% for option in status_options %}
+                <option value="{{ option }}" {% if filter_status == option %}selected{% endif %}>
+                    {% if option == '' %}All{% else %}{{ option|capitalize }}{% endif %}
+                </option>
                 {% endfor %}
-            </tbody>
-        </table>
-    </div>
+            </select>
+        </div>
+        <div class="col-md-3 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary">Apply Filters</button>
+        </div>
+    </form>
+
+ 
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>App ID</th>
+                <th>Student</th>
+                <th>Internship Title</th>
+                <th>Company</th>
+                <th>Date Applied</th>
+                <th>Status</th>
+                <th>Resume</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if applications %}
+            {% for app in applications %}
+            <tr>
+                <td>{{ app.application_id }}</td>  
+                <td>{{ app.full_name }}</td>
+                <td>{{ app.internship_title }}</td>
+                <td>{{ app.company_name }}</td>
+                <td>{{ app.application_date }}</td>  
+                <td>
+                    <span class="badge {% if app.status == 'pending' %}bg-warning
+                                       {% elif app.status == 'accepted' %}bg-success
+                                       {% elif app.status == 'short listed' %}bg-info
+                                       {% elif app.status == 'rejected' %}bg-danger
+                                       {% else %}bg-secondary{% endif %}">
+                        {{ app.status|capitalize }}
+                    </span>
+                </td>
+                <td>
+                    {% if app.resume_url and app.resume_url != '' %}  
+                    <a href="{{ url_for('admin.download_resume', filename=app.resume_url.split('/')[-1]) }}" target="_blank">View Resume</a>  
+                    {% else %}
+                    N/A
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+            {% else %}
+            <tr>
+                <td colspan="7" class="text-center">No applications found.</td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
 </div>
 {% endblock %}
